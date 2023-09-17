@@ -196,6 +196,7 @@ export class UsuarioController {
       login.token = "";
       login.estadoToken = false;
       this.loginRepository.create(login)
+      usuario.clave = "";
       //notificar al usuario via sms
       return usuario;
     }
@@ -225,6 +226,18 @@ export class UsuarioController {
       let token = this.servicioSeguridad.crearToken(usuario)
       if (usuario) {
         usuario.clave = "";
+        try {
+          this.usuarioRepository.logins(usuario._id).patch(
+            {
+              estadoCodigo2fa: true,
+              token: token
+            },
+            {
+              estadoCodigo2fa: false
+            })
+        } catch {
+          console.log("No se ha almacenado el cambio del estado de token en la db")
+        }
         return {
           user: usuario,
           token: token
